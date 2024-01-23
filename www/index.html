@@ -53,10 +53,9 @@
 
 		.task-actions button {
             font-size: 12px;
-			width: 42px;
+			width: 40px;
             padding: 4px 8px;
 			display: inline-block;
-			margin-right: 5px;
         }
 		</style>
         <title>Cordova App TaskList</title>
@@ -65,7 +64,7 @@
 		<div data-role="page" id="homePage">
 			<div data-role="header">
 				<h1>TaskList</h1>
-				<a href="#" id="addTaskButton" onclick="showPrompt()">+</a>
+				<a href="#" onclick="showPrompt()">+</a>
 			</div>
 
 			<ul data-role="listview" id="taskList"></ul>
@@ -90,14 +89,46 @@
             function showPrompt() {
                 var taskName = prompt("Com es diu la nova tasca?");
                 if (taskName !== null && taskName.trim() !== "") {
-					var newTaskItem = $('<li><a href="#" class="task-item">' + taskName + '</a></li>');
-
-					$("#taskList").append(newTaskItem).listview("refresh");
+					var newTask = $('<li><a href="#" class="task-item">' + taskName +
+						'<span class="task-actions"><button onclick="editTask(this)">Edit</button>' +
+						'<button onclick="deleteTask(this)">X</button></span></a></li>');
+					$("#taskList").append(newTask).listview("refresh");
 					alert("S'ha afegit la nova tasca " + taskName + "!");
 				} else {
 					alert("El nom de la nova tasca no pot ser buit.");
 				}
             }
+
+			function editTask(button) {
+				var taskItem = $(button).closest('.task-item');
+				var taskText = taskItem.clone()    // Clonem la tasca
+									   .children() // Seleccionem els seus fills
+									   .remove()   // Eliminem els fills (només deixem el text)
+									   .end()      // Tornem a la sel·lecció original
+									   .text()     // Obtenim el contingut del text
+
+				var editInput = $('<input type="text" class="edit-input" value="' + taskText + '">');
+				var okButton = $('<button onclick="saveEdit(this)">OK</button>');
+
+				taskItem.empty().append(editInput).append(okButton);
+			}
+
+			function saveEdit(button) {
+				var taskItem = $(button).closest('.task-item');
+				var editedTaskName = taskItem.find('.edit-input').val().trim();
+
+				if (editedTaskName !== "") {
+					taskItem.empty().append(editedTaskName +
+						'<span class="task-actions"><button onclick="editTask(this)">Edit</button>' +
+						'<button onclick="deleteTask(this)">X</button></span>');
+				} else {
+					alert("El nom de la tasca editada no pot ser buit.");
+				}
+			}
+
+			function deleteTask(button) {
+				$(button).closest('li').remove();
+			}
         </script>
 	</body>
 </html>
